@@ -133,7 +133,7 @@ function renderComp() {
 
 /* ---------------------------------------------------------------- Mouvements */
 const CITY = { Paris: [2.35, 48.86], Dakar: [-17.45, 14.69], Abidjan: [-4.01, 5.35] };
-function proj([lon, lat]) { return [60 + (lon + 22) * 17.5, 30 + (52 - lat) * 9.4]; }
+function proj([lon, lat]) { return [70 + (lon + 22) * 15.5, 48 + (52 - lat) * 8.4]; }
 function mapSvg() {
   const W = 520, H = 470;
   const pt = {}; Object.keys(CITY).forEach(c => pt[c] = proj(CITY[c]));
@@ -152,7 +152,8 @@ function mapSvg() {
     const col = tr ? "#24466E" : ok ? "#1B6E46" : "#9A6B1F";
     const dash = tr ? "" : ok ? "" : 'stroke-dasharray="5 5"';
     // étiquette au milieu de la courbe
-    const lx = .25 * x1 + .5 * cx + .25 * x2, ly = .25 * y1 + .5 * cy + .25 * y2;
+    const t0 = [.5, .3, .7][(k - 1) % 3], t = a < b ? t0 : 1 - t0;
+    const lx = (1 - t) * (1 - t) * x1 + 2 * t * (1 - t) * cx + t * t * x2, ly = (1 - t) * (1 - t) * y1 + 2 * t * (1 - t) * cy + t * t * y2;
     const ang = Math.atan2(y2 - cy, x2 - cx);
     const ax = x2 - Math.cos(ang) * 16, ay = y2 - Math.sin(ang) * 16;
     const arrow = `<path d="M${ax},${ay} l${-Math.cos(ang - .45) * 9},${-Math.sin(ang - .45) * 9} M${ax},${ay} l${-Math.cos(ang + .45) * 9},${-Math.sin(ang + .45) * 9}" stroke="${col}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
@@ -160,7 +161,7 @@ function mapSvg() {
       <g><rect x="${lx - 15}" y="${ly - 10}" width="30" height="19" rx="9.5" fill="#fff" stroke="${col}" stroke-width="1"/><text x="${lx}" y="${ly + 4}" text-anchor="middle" font-family="Inter" font-size="10.5" font-weight="600" fill="${col}">${d.ref}</text></g>`;
   }).join("");
   const nodes = Object.keys(CITY).map(c => {
-    const [x, y] = pt[c], n = counts[c] || 0, left = c === "Dakar";
+    const [x, y] = pt[c], n = counts[c] || 0, left = c !== "Abidjan";
     return `<circle cx="${x}" cy="${y}" r="9" fill="#111"/><circle cx="${x}" cy="${y}" r="15" fill="none" stroke="#111" stroke-width="1" opacity=".25"/>
       <text x="${x + (left ? -22 : 22)}" y="${y - 4}" text-anchor="${left ? "end" : "start"}" font-family="Cormorant, Georgia, serif" font-size="26" font-weight="500" fill="#111">${c}</text>
       <text x="${x + (left ? -22 : 22)}" y="${y + 16}" text-anchor="${left ? "end" : "start"}" font-family="Inter" font-size="12" fill="#6E6A63">${n} œuvre${n > 1 ? "s" : ""} sur place</text>`;
@@ -168,7 +169,7 @@ function mapSvg() {
   // repères géographiques discrets
   const grid = [10, 20, 30, 40, 50].map(lat => { const y = proj([0, lat])[1]; return `<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="#E6E2DA" stroke-width="1" stroke-dasharray="2 6"/>`; }).join("");
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Carte des transports entre Paris, Dakar et Abidjan">${grid}
-    <text x="${W - 12}" y="${proj([0, 30])[1] - 6}" text-anchor="end" font-family="Inter" font-size="10" fill="#A29E96">Méditerranée · Sahara</text>
+    <text x="12" y="${proj([0, 30])[1] - 6}" font-family="Inter" font-size="10" fill="#A29E96">Méditerranée · Sahara</text>
     <text x="${12}" y="${H - 14}" font-family="Inter" font-size="10" fill="#A29E96">Golfe de Guinée</text>${arcs}${nodes}</svg>`;
 }
 function mouvements() {
